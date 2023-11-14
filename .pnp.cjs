@@ -43,7 +43,7 @@ const RAW_RUNTIME_STATE =
           ["husky", "npm:8.0.3"],\
           ["lint-staged", "npm:15.0.2"],\
           ["nodemon", "npm:3.0.1"],\
-          ["prettier", "npm:3.0.3"],\
+          ["prettier", "npm:3.1.0"],\
           ["renamer", "npm:4.0.0"],\
           ["rimraf", "npm:5.0.5"],\
           ["semantic-release", "npm:22.0.7"],\
@@ -459,7 +459,7 @@ const RAW_RUNTIME_STATE =
           ["husky", "npm:8.0.3"],\
           ["lint-staged", "npm:15.0.2"],\
           ["nodemon", "npm:3.0.1"],\
-          ["prettier", "npm:3.0.3"],\
+          ["prettier", "npm:3.1.0"],\
           ["renamer", "npm:4.0.0"],\
           ["rimraf", "npm:5.0.5"],\
           ["semantic-release", "npm:22.0.7"],\
@@ -6639,10 +6639,10 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["prettier", [\
-      ["npm:3.0.3", {\
-        "packageLocation": "./.yarn/unplugged/prettier-npm-3.0.3-fced695dae/node_modules/prettier/",\
+      ["npm:3.1.0", {\
+        "packageLocation": "./.yarn/unplugged/prettier-npm-3.1.0-708d6027b1/node_modules/prettier/",\
         "packageDependencies": [\
-          ["prettier", "npm:3.0.3"]\
+          ["prettier", "npm:3.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\
