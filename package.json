@@ -63,7 +63,8 @@
     }
   },
   "dependencies": {
-    "tslib": "2.6.2"
+    "tslib": "2.6.2",
+    "zod": "3.22.4"
   },
-  "packageManager": "yarn@4.0.1"
+  "packageManager": "yarn@4.0.2"
 }
