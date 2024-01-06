@@ -1,7 +1,7 @@
 {
-  "name": "@johngeorgewright/ts-module",
-  "version": "3.1.0",
-  "description": "TypeScript library template",
+  "name": "@oldgods/bandcamp",
+  "version": "0.0.0",
+  "description": "Bandcamp API",
   "private": true,
   "type": "module",
   "sideEffects": false,
@@ -16,15 +16,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/johngeorgewright/ts-module.git"
+    "url": "git+https://github.com/Old-Gods/bandcamp.git"
   },
   "keywords": [],
   "author": "John Wright <johngeorge.wright@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/johngeorgewright/ts-module/issues"
+    "url": "https://github.com/Old-Gods/bandcamp/issues"
   },
-  "homepage": "https://github.com/johngeorgewright/ts-module#readme",
+  "homepage": "https://github.com/Old-Gods/bandcamp#readme",
   "devDependencies": {
     "@commitlint/cli": "18.4.4",
     "@commitlint/config-conventional": "18.4.4",
