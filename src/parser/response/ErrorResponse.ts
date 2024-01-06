@@ -3,7 +3,7 @@ import { zodGuard } from 'zod-guard'
 
 export const ErrorResponseParser = z.object({
   error: z.literal(true),
-  error_description: z.string(),
+  error_message: z.string(),
 })
 
 export type ErrorResponse = z.output<typeof ErrorResponseParser>

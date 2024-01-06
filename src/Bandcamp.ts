@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { z } from 'zod'
+import { ZodError, z } from 'zod'
 import { loadJSON, saveJSON } from './fs.js'
 import { Access, AccessParser } from './parser/response/Access.js'
 import { Credentials, CredentialsParser } from './parser/request/Credentials.js'
@@ -10,6 +10,20 @@ import {
 } from './parser/response/ErrorResponse.js'
 import { OrdersResponseParser } from './parser/response/MerchOrdersResponse.js'
 import { MerchOrdersRequest } from './parser/request/MerchOrdersRequest.js'
+import { MerchResponseParser } from './parser/response/MerchResponse.js'
+import { MerchRequest } from './parser/request/MerchRequest.js'
+import { ShippingOriginDetailsRequest } from './parser/request/ShippingOriginDetailsRequest.js'
+import { ShippingOriginDetailsResponseParser } from './parser/response/ShippingOriginDetailsResponse.js'
+import { UpdateShippedRequest } from './parser/request/UpdateShippedRequest.js'
+import { UpdateShippedResponseParser } from './parser/response/UpdateShippedResponse.js'
+import { MarkDateRangeAsShippedRequest } from './parser/request/MarkDateRangeAsShippedRequest.js'
+import { MarkDateRangeAsShippedResponseParser } from './parser/response/MarkDateRangeAsShippedResponse.js'
+import { UpdateQuantitiesRequest } from './parser/request/UpdateQuantitiesRequest.js'
+import { UpdateQuantitiesResponseParser } from './parser/response/UpdateQuantitiesResponse.js'
+import { UpdateSKURequest } from './parser/request/UpdateSKURequest.js'
+import { UpdateSKUResponseParser } from './parser/response/UpdateSKUResponse.js'
+import { SalesReportRequest } from './parser/request/SalesReportRequest.js'
+import { SalesReportResponseParser } from './parser/response/SalesReportResponse.js'
 
 interface BaseLoginOptions {
   access_path?: string
@@ -104,15 +118,15 @@ export class Bandcamp {
     this.#apiHostmane = apiHostname
   }
 
-  // async getMerch(query: {
-  //   band_id: number
-  //   member_band_id?: number
-  //   start_time: string
-  //   end_time?: string
-  //   package_ids?: number[]
-  // }) {
-  //   return (await this.#api('/merchorders/1/get_merch_details', Merch query)).items
-  // }
+  async getMerch(query: MerchRequest) {
+    return (
+      await this.#api(
+        '/merchorders/1/get_merch_details',
+        MerchResponseParser,
+        query,
+      )
+    ).items
+  }
 
   async getMyBands() {
     return (await this.#api('/account/1/my_bands', BandsResponseParser)).bands
@@ -122,6 +136,54 @@ export class Bandcamp {
     return (
       await this.#api('/merchorders/3/get_orders', OrdersResponseParser, query)
     ).items
+  }
+
+  async getShippingOriginDetails(query: ShippingOriginDetailsRequest) {
+    return (
+      await this.#api(
+        '/merchorders/1/get_shipping_origin_details',
+        ShippingOriginDetailsResponseParser,
+        query,
+      )
+    ).shipping_origins
+  }
+
+  getSalesReport(query: SalesReportRequest) {
+    return this.#api('/sales/2/sales_report', SalesReportResponseParser, query)
+  }
+
+  updateShipped(query: UpdateShippedRequest) {
+    return this.#api(
+      '/merchorders/2/update_shipped',
+      UpdateShippedResponseParser,
+      query,
+    )
+  }
+
+  async markDateRangeAShipped(query: MarkDateRangeAsShippedRequest) {
+    return (
+      await this.#api(
+        '/merchorders/1/mark_date_range_as_shipped',
+        MarkDateRangeAsShippedResponseParser,
+        query,
+      )
+    ).items
+  }
+
+  updateQuantities(query: UpdateQuantitiesRequest) {
+    return this.#api(
+      '/merchorders/1/update_quantities',
+      UpdateQuantitiesResponseParser,
+      query,
+    )
+  }
+
+  updateSKU(query: UpdateSKURequest) {
+    return this.#api(
+      '/api/merchorders/1/update_sku',
+      UpdateSKUResponseParser,
+      query,
+    )
   }
 
   async #api<Parser extends z.ZodType>(
@@ -139,7 +201,21 @@ export class Bandcamp {
       },
     )
     if (isErrorResponse(responseData))
-      throw new Error(responseData.error_description)
-    return parser.parse(responseData)
+      throw new Error(responseData.error_message)
+    try {
+      return parser.parse(responseData)
+    } catch (error) {
+      throw new ParsingResponseError(path, responseData, error as ZodError)
+    }
+  }
+}
+
+export class ParsingResponseError extends Error {
+  constructor(
+    path: string,
+    public readonly responseData: unknown,
+    public readonly parsingError: ZodError,
+  ) {
+    super(`There was an error paring the response from ${path}.`)
   }
 }

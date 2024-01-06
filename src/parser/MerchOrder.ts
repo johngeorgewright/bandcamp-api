@@ -15,7 +15,7 @@ export const MerchOrderParser = z.object({
   discount_code: z.string().nullable().describe('discount code, if it exists'),
   item_name: z.string().describe('name of the merch item, on Bandcamp'),
   item_url: z.string().describe('URL to the item, on Bandcamp'),
-  marketplace_tax: z.string().nullable(),
+  marketplace_tax: z.string().nullable().optional(),
   option: z.string().nullable().describe('option name, if it exists'),
   order_date: z.string().describe('date order was placed'),
   order_total: z.number().describe('total charge'),
@@ -66,7 +66,7 @@ export const MerchOrderParser = z.object({
     .describe('second line of street name, if exists, for shipping'),
   ship_to_street: z.string().describe('street name, for shipping'),
   ship_to_zip: z.string().describe('postal code'),
-  shipping: z.string().describe('shipping costs'),
+  shipping: z.number().describe('shipping costs'),
   sku: z
     .string()
     .nullable()
@@ -74,7 +74,7 @@ export const MerchOrderParser = z.object({
       'SKU applied to merch item by band or label, if a SKU has been applied to the merch item. If the thing purchased comes in several options, the SKU here is that of option purchased.',
     ),
   sub_total: z.number().describe('total before taxes'),
-  tax: z.number().describe('taxes applied to sale'),
+  tax: z.number().nullable().describe('taxes applied to sale'),
 })
 
 export type MerchOrder = z.infer<typeof MerchOrderParser>

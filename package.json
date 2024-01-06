@@ -40,6 +40,7 @@
     "commitizen": "4.3.0",
     "concurrently": "8.2.2",
     "cz-conventional-changelog": "3.3.0",
+    "dotenv": "^16.3.1",
     "husky": "8.0.3",
     "lint-staged": "15.2.0",
     "nodemon": "3.0.2",

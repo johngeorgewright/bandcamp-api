@@ -18,11 +18,13 @@ export const ShippingOriginParser = z.object({
     ),
   state_name: z
     .string()
+    .nullable()
     .describe(
       'the name of the state that this shipping origin is located in, if available',
     ),
   state_code: z
     .string()
+    .nullable()
     .describe(
       'the two-character code for the state that this shipping origin is located in, if available',
     ),
