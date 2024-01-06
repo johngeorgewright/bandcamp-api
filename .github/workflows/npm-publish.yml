@@ -18,7 +18,7 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PUSH_TOKEN }}
+          token: ${{ secrets.OG_TOKEN }}
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -34,5 +34,5 @@ jobs:
       - name: Release
         run: npm run semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.OG_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
