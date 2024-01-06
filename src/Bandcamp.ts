@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { ZodError, z } from 'zod'
 import { loadJSON, saveJSON } from './fs.js'
 import { Access, AccessParser } from './parser/response/Access.js'
@@ -41,11 +41,13 @@ type LoginOptions =
   | LoginOptionsWithCredentialsPath
 
 export class Bandcamp {
-  static async login({
-    access_path = `${process.env.HOME}/.bandcamp/access.json`,
-    api_hostname = 'https://bandcamp.com',
-    ...options
-  }: LoginOptions) {
+  static async login(loginOptions: LoginOptions) {
+    let {
+      access_path = `${process.env.HOME}/.bandcamp/access.json`,
+      api_hostname = 'https://bandcamp.com',
+      ...options
+    } = loginOptions
+
     const params = new URLSearchParams()
     let access = await this.#loadAccess(access_path)
 
@@ -79,8 +81,8 @@ export class Bandcamp {
 
     return new Bandcamp({
       access,
-      // accessPath: access_path,
       apiHostname: api_hostname,
+      loginOptions,
     })
   }
 
@@ -101,21 +103,21 @@ export class Bandcamp {
   }
 
   #access: Access
-  // #accessPath: string
   #apiHostmane: string
+  #loginOptions: LoginOptions
 
   constructor({
     access,
-    // accessPath,
     apiHostname,
+    loginOptions,
   }: {
     access: Access
-    // accessPath: string
     apiHostname: string
+    loginOptions: LoginOptions
   }) {
     this.#access = access
-    // this.#accessPath = accessPath
     this.#apiHostmane = apiHostname
+    this.#loginOptions = loginOptions
   }
 
   async getMerch(query: MerchRequest) {
@@ -186,26 +188,51 @@ export class Bandcamp {
     )
   }
 
+  async #login() {
+    const bandcamp = await Bandcamp.login(this.#loginOptions)
+    this.#access = bandcamp.#access
+  }
+
   async #api<Parser extends z.ZodType>(
     path: `/${string}`,
     parser: Parser,
     data: any = {},
+    attemptLoginOnFail = true,
   ): Promise<Exclude<z.output<Parser>, ErrorResponse>> {
-    const { data: responseData } = await axios.post(
-      `${this.#apiHostmane}/api${path}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${this.#access.access_token}`,
+    let responseData: unknown
+
+    try {
+      ;({ data: responseData } = await axios.post(
+        `${this.#apiHostmane}/api${path}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${this.#access.access_token}`,
+          },
         },
-      },
-    )
+      ))
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        error.response?.status === 401 &&
+        attemptLoginOnFail
+      ) {
+        await this.#login()
+        return this.#api(path, parser, data, false)
+      }
+
+      throw error
+    }
+
     if (isErrorResponse(responseData))
       throw new Error(responseData.error_message)
+
     try {
       return parser.parse(responseData)
     } catch (error) {
-      throw new ParsingResponseError(path, responseData, error as ZodError)
+      if (error instanceof ZodError)
+        throw new ParsingResponseError(path, responseData, error)
+      else throw error
     }
   }
 }
