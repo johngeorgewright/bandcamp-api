@@ -11,7 +11,7 @@ import { Bandcamp } from '../../Bandcamp.js'
 export const BandcampShipCommand = createJSONResponseCommand(
   UpdateShippedRequestParser.shape.items.element.omit({ id: true }),
   z.object({}),
-  [['ship']],
+  [['merch', 'ship']],
   'Updates shipped/unshipped status of merchandise orders',
   {
     commit: Option.Boolean('--commit', {

@@ -4,9 +4,11 @@
   "description": "Bandcamp API",
   "private": true,
   "type": "module",
-  "sideEffects": false,
   "main": "./dist/common/index.js",
   "module": "./dist/es/index.js",
+  "bin": {
+    "bandcamp": "./dist/cli/run.js"
+  },
   "scripts": {
     "build": "npm run clean && tsc && tsc --project tsconfig.common.json",
     "clean": "rimraf dist",
@@ -72,7 +74,9 @@
     "clipanion": "^4.0.0-rc.2",
     "lodash": "^4.17.21",
     "mkdirp": "^3.0.1",
+    "ora": "^8.0.1",
     "tslib": "^2.6.2",
+    "yaml": "^2.3.4",
     "zod-guard": "^2.0.0"
   },
   "peerDependencies": {

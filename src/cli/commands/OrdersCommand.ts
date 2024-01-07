@@ -2,11 +2,12 @@ import _ from 'lodash'
 import { Bandcamp, MerchOrderParser } from '../../index.js'
 import { createJSONResponseCommand } from './JSONResponseCommand.js'
 import { MerchOrdersRequestParser } from '../../parser/request/MerchOrdersRequest.js'
+import YAML from 'yaml'
 
 export const BandcampOrdersCommand = createJSONResponseCommand(
   MerchOrdersRequestParser,
   MerchOrderParser,
-  [['orders']],
+  [['merch', 'orders']],
   'Lists merchandise orders placed with a band or label.',
   {},
   async (command) => {
@@ -14,6 +15,6 @@ export const BandcampOrdersCommand = createJSONResponseCommand(
     const bandcamp = await Bandcamp.create(command)
     const orders = await bandcamp.getMerchOrders(command)
     spinner.stop()
-    command.context.stdout.write(JSON.stringify(orders, null, 2) + '\n')
+    command.context.stdout.write(YAML.stringify(orders) + '\n')
   },
 )
