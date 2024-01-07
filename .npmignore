@@ -14,4 +14,3 @@ tsconfig.json
 tsconfig.*.json
 typedoc.json
 .vscode
-.yarn*
