@@ -12,13 +12,5 @@ test('mung', async () => {
     client_secret: env.BANDCAMP_CLIENT_SECRET,
   })
 
-  const [band] = await bandcamp.getMyBands()
-
-  console.info(
-    await bandcamp.getSalesReport({
-      band_id: band.band_id,
-      start_time: '2024-01-01',
-      format: 'csv',
-    }),
-  )
+  console.info(await bandcamp.getMyBands())
 })
