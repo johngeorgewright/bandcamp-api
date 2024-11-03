@@ -1,5 +1,5 @@
 import { Option } from 'clipanion'
-import { setTimeout } from 'node:timers/promises'
+import timers from 'node:timers/promises'
 import _ from 'lodash'
 import * as t from 'typanion'
 import z from 'zod'
@@ -57,7 +57,7 @@ export const BandcampShipCommand = createJSONResponseCommand(
       `Shipping ${ids.length} IDs to bandcamp`,
     )
 
-    await setTimeout(5_000)
+    await timers.setTimeout(5_000)
 
     const bandcamp = await Bandcamp.create(command)
 

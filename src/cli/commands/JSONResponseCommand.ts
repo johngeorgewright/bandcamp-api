@@ -1,9 +1,8 @@
 import { z } from 'zod'
 import { BandcampCommand } from './Command.js'
 import { BaseContext, Command, CommandClass, Option } from 'clipanion'
-import * as t from 'typanion'
 import { getParserType } from '../../lib/zodReflect.js'
-import { StringOptionNoBoolean } from 'clipanion/lib/advanced/options/String.js'
+import { zodClipanionValidator } from 'zod-clipanion-validator'
 
 export function createJSONResponseCommand<
   RequestParser extends z.ZodObject<z.ZodRawShape>,
@@ -32,7 +31,7 @@ ${Object.entries(parser.shape).reduce(
     `
 
 ${key}
-: ${parser.description}
+${parser.description ? `: ${parser.description}` : ''}
 `,
   '',
 )}
@@ -42,39 +41,30 @@ ${key}
     constructor() {
       super()
       this.#addParserOptions(requestParser.shape)
-
-      for (const [key, value] of Object.entries(options)) {
-        ;(this as any)[key] = value
-      }
+      Object.assign(this, options)
     }
 
     #addParserOptions(shape: z.ZodRawShape) {
       for (const [key, parser] of Object.entries(shape)) {
         const descriptor = `--${key}`
         const reflection = getParserType(parser)
-        const opts: StringOptionNoBoolean<string> = {
+
+        const opts = {
           description: parser.description,
           required: !parser.isOptional(),
+          validator: zodClipanionValidator(parser),
         }
 
-        ;(this as any)[key] =
-          reflection.type === 'object'
-            ? this.#addParserOptions(reflection.shape)
-            : reflection.type === 'string'
-              ? Option.String(descriptor, opts)
-              : reflection.type === 'enum'
-                ? Option.String(descriptor, {
-                    ...opts,
-                    validator: t.isEnum(reflection.options),
-                  })
-                : reflection.type === 'boolean'
-                  ? Option.Boolean(descriptor, opts)
-                  : reflection.type === 'number'
-                    ? Option.String(descriptor, {
-                        ...opts,
-                        validator: t.isNumber(),
-                      })
-                    : undefined
+        Object.defineProperty(this, key, {
+          enumerable: true,
+          value:
+            reflection.type === 'boolean'
+              ? Option.Boolean(descriptor, opts)
+              : reflection.type === 'array'
+                ? Option.Array(descriptor, opts)
+                : Option.String(descriptor, opts),
+          writable: true,
+        })
       }
     }
 

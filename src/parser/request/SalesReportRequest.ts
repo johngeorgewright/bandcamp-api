@@ -2,12 +2,12 @@ import { z } from 'zod'
 import { DateParser } from '../Date.js'
 
 export const SalesReportRequestParser = z.strictObject({
-  band_id: z
+  band_id: z.coerce
     .number()
     .describe(
       'the unique id of the band or label you are calling as or on behalf of',
     ),
-  member_band_id: z
+  member_band_id: z.coerce
     .number()
     .optional()
     .describe(

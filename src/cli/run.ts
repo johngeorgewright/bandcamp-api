@@ -5,6 +5,7 @@ import { BandcampOrdersCommand } from './commands/OrdersCommand.js'
 import { BandcampShipCommand } from './commands/ShipCommand.js'
 import { BandcampMerchCommand } from './commands/MerchCommand.js'
 import { BandcampShippingOriginsCommand } from './commands/ShippingOriginsCommand.js'
+import { BandcampSalesReportCommand } from './commands/SalesReportCommands.js'
 
 runExit(
   {
@@ -21,5 +22,6 @@ runExit(
     BandcampOrdersCommand,
     BandcampShippingOriginsCommand,
     BandcampShipCommand,
+    BandcampSalesReportCommand,
   ],
 )

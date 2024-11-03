@@ -2,12 +2,12 @@ import { z } from 'zod'
 import { DateParser } from '../Date.js'
 
 export const MerchOrdersRequestParser = z.strictObject({
-  band_id: z
+  band_id: z.coerce
     .number()
     .describe(
       'Bandcamp ID of your label or the (usually) label on whose behalf you are querying (get this ID from my_bands in the Account API)',
     ),
-  member_band_id: z
+  member_band_id: z.coerce
     .number()
     .optional()
     .describe('(optional) Bandcamp ID of band to filter on; defaults to all'),
@@ -27,7 +27,7 @@ export const MerchOrdersRequestParser = z.strictObject({
     .string()
     .optional()
     .describe('(optional) filter orders on this item name (or title)'),
-  origin_id: z
+  origin_id: z.coerce
     .number()
     .optional()
     .describe('(optional) filter orders on a particular shipping origin'),

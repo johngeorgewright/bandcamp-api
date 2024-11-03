@@ -2,12 +2,12 @@ import { z } from 'zod'
 import { DateParser } from '../Date.js'
 
 export const MerchRequestParser = z.strictObject({
-  band_id: z
+  band_id: z.coerce
     .number()
     .describe(
       'Bandcamp ID of your label or the (usually) label on whose behalf you are querying (get this ID from my_bands in the Account API)',
     ),
-  member_band_id: z
+  member_band_id: z.coerce
     .number()
     .optional()
     .describe(
@@ -19,7 +19,7 @@ export const MerchRequestParser = z.strictObject({
   end_time: DateParser.optional().describe(
     '(optional) latest date items you are in interested in would have been added to Bandcamp; defaults to the time of the call',
   ),
-  package_ids: z
+  package_ids: z.coerce
     .number()
     .array()
     .optional()
