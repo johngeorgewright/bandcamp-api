@@ -1,13 +1,13 @@
 import { z } from 'zod'
 
 export const ShippingOriginDetailsRequestParser = z.strictObject({
-  band_id: z
+  band_id: z.coerce
     .number()
     .optional()
     .describe(
       'Bandcamp ID of your label or the (usually) label on whose behalf you are querying (get this ID from my_bands in the Account API)',
     ),
-  origin_id: z
+  origin_id: z.coerce
     .number()
     .optional()
     .describe(

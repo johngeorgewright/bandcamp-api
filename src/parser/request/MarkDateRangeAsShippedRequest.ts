@@ -2,10 +2,10 @@ import { z } from 'zod'
 import { DateParser } from '../Date.js'
 
 export const MarkDateRangeAsShippedRequestParser = z.strictObject({
-  band_id: z
+  band_id: z.coerce
     .number()
     .describe("identifies the label you're calling on behalf of"),
-  member_band_id: z
+  member_band_id: z.coerce
     .number()
     .optional()
     .describe('(optional) identifies the band or artist to filter on'),
@@ -15,7 +15,7 @@ export const MarkDateRangeAsShippedRequestParser = z.strictObject({
   end_time: DateParser.describe(
     ' most recent date in range of orders (must be in past)',
   ),
-  origin_id: z
+  origin_id: z.coerce
     .number()
     .optional()
     .describe(

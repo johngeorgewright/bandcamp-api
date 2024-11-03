@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { ZodError, z } from 'zod'
 import { loadJSON, saveJSON } from './fs.js'
 import { Access, AccessParser } from './parser/response/Access.js'
@@ -25,29 +25,30 @@ import { UpdateSKUResponseParser } from './parser/response/UpdateSKUResponse.js'
 import { SalesReportRequest } from './parser/request/SalesReportRequest.js'
 import { SalesReportResponseParser } from './parser/response/SalesReportResponse.js'
 
-interface BaseLoginOptions {
+interface BaseOptions {
   access_path?: string
   api_hostname?: string
 }
 
-interface LoginOptionsWithCredentials extends BaseLoginOptions, Credentials {}
+export interface LoginOptionsWithCredentials extends BaseOptions, Credentials {}
 
-interface LoginOptionsWithCredentialsPath extends BaseLoginOptions {
+export interface LoginOptionsWithCredentialsPath extends BaseOptions {
   credentials_path?: string
 }
 
-type LoginOptions =
+export type LoginOptions =
   | LoginOptionsWithCredentials
   | LoginOptionsWithCredentialsPath
 
-export class Bandcamp {
-  static async login(loginOptions: LoginOptions) {
-    let {
-      access_path = `${process.env.HOME}/.bandcamp/access.json`,
-      api_hostname = 'https://bandcamp.com',
-      ...options
-    } = loginOptions
+export const defaultAccessPath = `${process.env.HOME}/.bandcamp/access.json`
+export const defaultAPIHostname = 'https://bandcamp.com'
 
+export class Bandcamp {
+  static async login({
+    access_path = `${process.env.HOME}/.bandcamp/access.json`,
+    api_hostname = 'https://bandcamp.com',
+    ...options
+  }: LoginOptions) {
     const params = new URLSearchParams()
     let access = await this.#loadAccess(access_path)
 
@@ -56,9 +57,7 @@ export class Bandcamp {
 
     api_hostname = api_hostname.replace(/\/$/, '')
 
-    if ('credentials_path' in options) {
-      if (!options.credentials_path)
-        throw new Error('"credentials_path" must be a path')
+    if ('credentials_path' in options && options.credentials_path) {
       ;({ client_id, client_secret } = await this.#loadCredentials(
         options.credentials_path,
       ))
@@ -76,13 +75,26 @@ export class Bandcamp {
     if (access?.refresh_token) params.set('refresh_token', access.refresh_token)
 
     const response = await axios.post(`${api_hostname}/oauth_token`, params)
-    access = AccessParser.parse(response.data)
+    access = this.#parseResponseData(
+      `${api_hostname}/oauth_token`,
+      AccessParser,
+      response.data,
+    )
     await this.#saveAccess(access_path, access)
 
     return new Bandcamp({
       access,
       apiHostname: api_hostname,
-      loginOptions,
+    })
+  }
+
+  static async create({
+    access_path = defaultAccessPath,
+    api_hostname = defaultAPIHostname,
+  }: BaseOptions) {
+    return new Bandcamp({
+      access: AccessParser.parse(await this.#loadAccess(access_path)),
+      apiHostname: api_hostname,
     })
   }
 
@@ -104,20 +116,16 @@ export class Bandcamp {
 
   #access: Access
   #apiHostmane: string
-  #loginOptions: LoginOptions
 
   constructor({
     access,
     apiHostname,
-    loginOptions,
   }: {
     access: Access
     apiHostname: string
-    loginOptions: LoginOptions
   }) {
     this.#access = access
     this.#apiHostmane = apiHostname
-    this.#loginOptions = loginOptions
   }
 
   async getMerch(query: MerchRequest) {
@@ -188,45 +196,32 @@ export class Bandcamp {
     )
   }
 
-  async #login() {
-    const bandcamp = await Bandcamp.login(this.#loginOptions)
-    this.#access = bandcamp.#access
-  }
-
   async #api<Parser extends z.ZodType>(
     path: `/${string}`,
     parser: Parser,
     data: any = {},
-    attemptLoginOnFail = true,
   ): Promise<Exclude<z.output<Parser>, ErrorResponse>> {
-    let responseData: unknown
-
-    try {
-      ;({ data: responseData } = await axios.post(
-        `${this.#apiHostmane}/api${path}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${this.#access.access_token}`,
-          },
+    const { data: responseData } = await axios.post(
+      `${this.#apiHostmane}/api${path}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${this.#access.access_token}`,
         },
-      ))
-    } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.response?.status === 401 &&
-        attemptLoginOnFail
-      ) {
-        await this.#login()
-        return this.#api(path, parser, data, false)
-      }
-
-      throw error
-    }
+      },
+    )
 
     if (isErrorResponse(responseData))
       throw new Error(responseData.error_message)
 
+    return Bandcamp.#parseResponseData(path, parser, responseData)
+  }
+
+  static #parseResponseData<Parser extends z.ZodType>(
+    path: string,
+    parser: Parser,
+    responseData: unknown,
+  ): z.output<Parser> {
     try {
       return parser.parse(responseData)
     } catch (error) {
